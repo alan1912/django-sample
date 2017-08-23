@@ -5,9 +5,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework import filters
+from rest_framework import filters # 搜尋
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.views import ObtainAuthToken # 取登入 token
+from rest_framework.permissions import IsAuthenticatedOrReadOnly # (有Token&有權限 or 沒 Token or 沒權限)就 read_only
+from rest_framework.permissions import IsAuthenticated # (只要有 Token 就可操作)
 
 from . import serializers
 from . import models
@@ -112,7 +114,7 @@ class HelloViewSet(viewsets.ViewSet):
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
-    """Handles creating, creating and updating profiles."""
+    """Handles creating, reading and updating profiles."""
 
     serializer_class = serializers.UserProfileSerializer
     queryset = models.UserProfile.objects.all()
@@ -131,3 +133,18 @@ class LoginViewSet(viewsets.ViewSet):
         """Use the ObtainAuthToken APIView to validate and create a token."""
 
         return ObtainAuthToken().post(request)
+
+
+class UserProfileFeedViewSet(viewsets.ModelViewSet):
+    """Handles creating, reading and updating profile feed items."""
+
+    serializer_class = serializers.ProfileFeedItemSerializer
+    queryset = models.ProfileFeedItem.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    # permission_classes = (permissions.PostOwnStatus, IsAuthenticatedOrReadOnly) # (有Token&有權限 or 沒 Token or 沒權限)就 read_only
+    permission_classes = (permissions.PostOwnStatus, IsAuthenticated) # (只要有 Token 就可操作)
+
+    def perform_create(self, serializer):
+        """Sets the user profile to the logged in user."""
+
+        serializer.save(user_profile=self.request.user)
