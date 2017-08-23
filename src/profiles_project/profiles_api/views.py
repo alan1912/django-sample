@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication # 認證
+from rest_framework import filters # 搜尋
 
 from . import serializers
 from . import models
@@ -113,5 +114,9 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     serializer_class = serializers.UserProfileSerializer
     queryset = models.UserProfile.objects.all()
+
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.UpdateOwnProfile,)
+
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name', 'email',)
