@@ -10,4 +10,4 @@ class UpdateOwnProfile(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return obj.id == request.user.id
+        return obj.id == request.user.id # 只能夠操作自己的頁面, 不能操作別人的
